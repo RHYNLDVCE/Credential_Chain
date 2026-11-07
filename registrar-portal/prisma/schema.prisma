@@ -1,0 +1,79 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  name         String
+  role         String     @default("REGISTRAR")
+  department   String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model Cohort {
+  id          String       @id @default(cuid())
+  name        String
+  totalCount  Int          @default(0) @map("total_count")
+  txHash      String?      @map("tx_hash")
+  blockNumber BigInt?      @map("block_number")
+  tokenIds    String[]     @map("token_ids")
+  issuedBy    String?      @map("issued_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  credentials Credential[]
+
+  @@map("cohorts")
+}
+
+model Credential {
+  tokenId         String     @id @map("token_id")
+  studentAddress  String     @map("student_address")
+  docHash         String     @unique @map("doc_hash")
+  ipfsCID         String     @map("ipfs_cid")
+  canonicalRecord Json       @map("canonical_record")
+  status          String     @default("ACTIVE") // "ACTIVE" | "REVOKED"
+  issuedAt        DateTime   @default(now()) @map("issued_at")
+  txHash          String     @map("tx_hash")
+  blockNumber     BigInt     @map("block_number")
+  gasUsed         String?    @map("gas_used")
+  qrCode          String?    @map("qr_code") @db.Text
+  cohortId        String?    @map("cohort_id")
+  cohort          Cohort?    @relation(fields: [cohortId], references: [id])
+  fileInfo        Json?      @map("file_info")
+  revocation      Json?      @map("revocation")
+  recoveryHistory Json?      @default("[]") @map("recovery_history")
+  auditLogs       AuditLog[]
+
+  @@index([studentAddress])
+  @@index([docHash])
+  @@index([status])
+  @@map("credentials")
+}
+
+model AuditLog {
+  id            String      @id @default(cuid())
+  action        String
+  performedBy   String      @map("performed_by")
+  user          User?       @relation(fields: [userId], references: [id])
+  userId        String?     @map("user_id")
+  targetTokenId String?     @map("target_token_id")
+  credential    Credential? @relation(fields: [targetTokenId], references: [tokenId])
+  txHash        String?     @map("tx_hash")
+  details       Json?       @default("{}")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@index([performedBy])
+  @@index([targetTokenId])
+  @@index([action])
+  @@map("audit_logs")
+}

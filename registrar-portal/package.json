@@ -1,0 +1,24 @@
+{
+  "name": "registrar-portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^3.0.3",
+    "ethers": "^6.17.0",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^1.51.0",
+    "next": "16.3.8",
+    "qrcode": "^1.5.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}
